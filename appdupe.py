@@ -17,7 +17,8 @@ parser.add_argument("-o", metavar="output", required=True,
     help="duplicated ipa to create")
 
 # bundle id will be changed to `fyi.zxcvbn.appdupe.<BUNDLE>`
-# <BUNDLE> will be derived from seed if specified, otherwise random
+# <BUNDLE> will be always be random,
+# only teamid is derived from seed
 parser.add_argument("-s", metavar="seed",
     help="a \"seed\" to derive the app id from "
     "(any string of your choosing -- will always produce same output)")
