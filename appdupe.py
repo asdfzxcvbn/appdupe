@@ -17,23 +17,26 @@ parser.add_argument("-o", metavar="output", required=True,
     help="duplicated ipa to create")
 
 # bundle id will be changed to `fyi.zxcvbn.appdupe.<BUNDLE>`
-# <BUNDLE> will be always be random,
-# only teamid is derived from seed
+# <BUNDLE> will be always be random, only teamid is derived from seed
 parser.add_argument("-s", metavar="seed",
     help="a \"seed\" to derive the app id from "
-    "(any string of your choosing -- will always produce same output)")
+    "(any string of your choosing)")
+
+parser.add_argument("-b", metavar="id", help="bundle id to use (see README)")
 
 args = parser.parse_args()
 
 # thanks pyzule for source
+if not args.o.endswith(".ipa"):
+    print("[?] ipa file extension not detected, appending manually")
+    args.o += ".ipa"
 if os.path.exists(args.o):
     overwrite = (input(f"[<] {args.o} already exists. overwrite? [Y/n] ")
                  .lower().strip())
     if overwrite in ("y", "yes", ""):
         del overwrite
     else:
-        print("[>] quitting.")
-        quit()
+        quit("[>] quitting.")
 
 # no ipa checks this time. maybe use the tool correctly? :D
 if args.s is None:
@@ -42,15 +45,23 @@ if args.s is None:
 # team identifiers are 10 chars, A-Z, and 0-9
 HASHED_STR = sha256(args.s.encode()).hexdigest().upper()
 TEAM_ID = HASHED_STR[-10:]
-
-# bundle will be random every time, shared teamid will allow
-# apps to communicate with each other (e.g. youtube, ytmusic, google docs)
-BUNDLE = f"fyi.zxcvbn.appdupe.{uuid4().hex[:10]}"
 BUNDLE_TI = f"fyi.zxcvbn.appdupe.{TEAM_ID}"
 
-print(f"[*] using seed: \"{args.s}\"")
+# bundle will be random every time (unless specified),
+# shared teamid will allow apps to communicate with each other
+# (e.g. youtube, ytmusic, google docs)
+if args.b is None:
+    BUNDLE = f"fyi.zxcvbn.appdupe.{uuid4().hex[:10]}"
+elif len(args.b) != 10:
+    quit("[!] -b argument has invalid length (see README)")
+elif any(c not in "0123456789abcdef" for c in args.b):
+    quit("[!] -b argument is invalid (see README)")
+else:
+    BUNDLE = f"fyi.zxcvbn.appdupe.{args.b}"
+
+print(f"[*] using seed: \"{args.s}\" (save this!)")
+print(f"[*] will use bundle id: {BUNDLE} (save this!)")
 print(f"[*] will use team id: {TEAM_ID}")
-print(f"[*] will use bundle id: {BUNDLE}")
 
 # objectives (what we are setting):
 # 1. application-identifier = "<TEAM_ID>.<BUNDLE>" (unique)

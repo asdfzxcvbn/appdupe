@@ -28,3 +28,29 @@ this is really messy. i made this without caring about quality so there's probab
 also, there might be some remaining shared app containers due to app extensions. you can use [pyzule](https://github.com/asdfzxcvbn/pyzule) to remove app extensions, change the app display name, and modify the app further.
 
 don't change the bundle id though.. not sure if that would break anything due to changing `application-identifier`. you can try if you want and tell me if it works, just open an issue or dm me on telegram or something.
+
+## updating duped apps
+let's think of this example: you need to duplicate discord, so you run this command:
+
+```shell
+$ python appdupe.py -i ~/Discord-v217.0.ipa -o ~/DiscordDupe
+[?] ipa file extension not detected, appending manually
+[*] using seed: "7c54c5db-d6c3-41f7-a5ab-c21d87e3e4e2" (save this!)
+[*] will use bundle id: fyi.zxcvbn.appdupe.700603c620 (save this!)
+[*] will use team id: 1429A9E38A
+[*] done, remember to remove app extensions (if u wanna)
+```
+
+everything works fine! but what if you wanted to update the duped discord? starting in v1.1 you can use -s and -b to achieve this. simply remember to save the command's output (like appdupe tells you to) then run:
+
+```shell
+# "700603c620" was the last part of the bundle id given to us last time
+$ python appdupe.py -i ~/Discord-v218.0.ipa -o ~/DiscordDupeUpdated -s "7c54c5db-d6c3-41f7-a5ab-c21d87e3e4e2" -b 700603c620
+[?] ipa file extension not detected, appending manually
+[*] using seed: "7c54c5db-d6c3-41f7-a5ab-c21d87e3e4e2" (save this!)
+[*] will use bundle id: fyi.zxcvbn.appdupe.700603c620 (save this!)
+[*] will use team id: 1429A9E38A
+[*] done, remember to remove app extensions (if u wanna)
+```
+
+then you can install the updated ipa normally, and you'll keep all your data.
