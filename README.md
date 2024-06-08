@@ -9,7 +9,7 @@ windows is not supported. use wsl.
 ## usage
 ```shell
 $ python appdupe.py -h
-usage: appdupe.py [-h] -i input -o output [-s seed]
+usage: appdupe.py [-h] -i input -o output [-s seed] [-b id]
 
 a cli tool to duplicate ios apps
 
@@ -17,7 +17,8 @@ options:
   -h, --help  show this help message and exit
   -i input    ipa to duplicate
   -o output   duplicated ipa to create
-  -s seed     a "seed" to derive the app id from (any string of your choosing -- will always produce same output)
+  -s seed     a "seed" to derive the app id from (any string of your choosing)
+  -b id       bundle id to use (see README)
 ```
 
 ## notes
