@@ -94,11 +94,12 @@ with TemporaryDirectory() as tmpdir:
     
     # step 3: obtain file entitlements
     ENT_PROC = subprocess.run(["ldid", "-e", EXEC_PATH], capture_output=True)
+    
+    # some IPAs have no entitlements, so just use empty dict in this case
     try:
-        ENT_PROC.check_returncode()
-    except subprocess.CalledProcessError as err:
-        exit(f"[!] error checking entitlements:\n{err.output.decode()}")
-    entitlements = plistlib.loads(ENT_PROC.stdout)
+        entitlements = plistlib.loads(ENT_PROC.stdout)
+    except Exception:
+        entitlements = {}
     
     # step 4: modify everything lol
     plist["CFBundleIdentifier"] = BUNDLE
