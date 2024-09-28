@@ -51,13 +51,13 @@ BUNDLE_TI = f"fyi.zxcvbn.appdupe.{TEAM_ID}"
 # shared teamid will allow apps to communicate with each other
 # (e.g. youtube, ytmusic, google docs)
 if args.b is None:
-    BUNDLE = f"fyi.zxcvbn.appdupe.{uuid4().hex[:10]}"
+    BUNDLE = f"fyi.zxcvbn.appdupe.{uuid4().hex[:10]}"  # type: ignore
 elif len(args.b) != 10:
     quit("[!] -b argument has invalid length (see README)")
 elif any(c not in "0123456789abcdef" for c in args.b):
     quit("[!] -b argument is invalid (see README)")
 else:
-    BUNDLE = f"fyi.zxcvbn.appdupe.{args.b}"
+    BUNDLE = f"fyi.zxcvbn.appdupe.{args.b}"  # type: ignore
 
 print(f"[*] using seed: \"{args.s}\" (save this!)")
 print(f"[*] will use bundle id: {BUNDLE} (save this!)")
@@ -86,33 +86,39 @@ with TemporaryDirectory() as tmpdir:
             EXEC_PATH = f"{tmpdir}/{EXEC_NAME}"
             EXEC_IPATH = f"Payload/{APP_NAME}/{EXEC_NAME}"
             ENT_PATH = f"{tmpdir}/ent"
-        
+
         # step 2: extract executable
         with zf.open(EXEC_IPATH) as r, \
                 open(EXEC_PATH, "wb") as w:
             w.write(r.read())  # write to specific file, avoids Payload/*
-    
+
     # step 3: obtain file entitlements
     ENT_PROC = subprocess.run(["ldid", "-e", EXEC_PATH], capture_output=True)
-    
+
     # some IPAs have no entitlements, so just use empty dict in this case
     try:
         entitlements = plistlib.loads(ENT_PROC.stdout)
     except Exception:
         entitlements = {}
-    
+
     # step 4: modify everything lol
     plist["CFBundleIdentifier"] = BUNDLE
+
+    try:
+        del plist["UISupportedDevices"]
+    except KeyError:
+        pass  # no worries if we don't have it ig
+
     entitlements["application-identifier"] = f"{TEAM_ID}.{BUNDLE}"
     entitlements["com.apple.developer.team-identifier"] = TEAM_ID
     entitlements["keychain-access-groups"] = [BUNDLE_TI]
     entitlements["com.apple.security.application-groups"] = [
         f"group.{BUNDLE_TI}"]
-    
+
     # step 5: write entitlements back to executable
     with open(ENT_PATH, "wb") as f:
-        plistlib.dump(entitlements, f)
-    
+        plistlib.dump(entitlements, f)  # type: ignore
+
     try:
         subprocess.run(
             ["ldid", f"-S{ENT_PATH}", EXEC_PATH],
@@ -127,15 +133,23 @@ with TemporaryDirectory() as tmpdir:
 
     ## thanks quin:
     ## https://github.com/asdfzxcvbn/quin/blob/2487c2ab43b89a04401c25b5f542b9d305b154c0/quin.py#L72
-    for key in (EXEC_IPATH, PLIST_PATH):
-        subprocess.run(
-            ["zip", "-d", OUTPUT, key], stdout=subprocess.DEVNULL)
+    # for key in (EXEC_IPATH, PLIST_PATH):
+    #     subprocess.run(
+    #         ["zip", "-d", OUTPUT, key], stdout=subprocess.DEVNULL)
+
+    subprocess.run(
+        [
+            "zip", "-d", OUTPUT, EXEC_IPATH, PLIST_PATH,
+            "Payload/*/PlugIns/*", "Payload/*/Extensions/*"  # see README
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
 
     with ZipFile(OUTPUT, "a") as zf:
         zf.write(EXEC_PATH, EXEC_IPATH)
         with zf.open(PLIST_PATH, "w") as f:
             plistlib.dump(plist, f)
-    
+
     shutil.move(OUTPUT, args.o)
 
 print("[*] done, remember to remove app extensions (if u wanna)")
+

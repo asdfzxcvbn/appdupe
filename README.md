@@ -26,9 +26,9 @@ you can use `-s` to ensure multiple apps share the same data container. an examp
 
 this is really messy. i made this without caring about quality so there's probably some bugs.. who cares though, it works, doesn't it?
 
-also, there might be some remaining shared app containers due to app extensions. you can use [pyzule](https://github.com/asdfzxcvbn/pyzule) to remove app extensions, change the app display name, and modify the app further.
+~~also, there might be some remaining shared app containers due to app extensions. you can use [pyzule](https://github.com/asdfzxcvbn/pyzule) to remove app extensions, change the app display name, and modify the app further.~~
 
-don't change the bundle id though.. not sure if that would break anything due to changing `application-identifier`. you can try if you want and tell me if it works, just open an issue or dm me on telegram or something.
+appdupe now forcibly removes app extensions since keeping them causes issues.
 
 ## updating duped apps
 let's think of this example: you need to duplicate discord, so you run this command:
