@@ -103,17 +103,19 @@ with TemporaryDirectory() as tmpdir:
 
     # step 4: modify everything lol
     plist["CFBundleIdentifier"] = BUNDLE
-
-    try:
-        del plist["UISupportedDevices"]
-    except KeyError:
-        pass  # no worries if we don't have it ig
+    for key in ["UISupportedDevices", "CFBundleURLTypes"]:
+        if key in plist:
+            del plist[key]
 
     entitlements["application-identifier"] = f"{TEAM_ID}.{BUNDLE}"
     entitlements["com.apple.developer.team-identifier"] = TEAM_ID
     entitlements["keychain-access-groups"] = [BUNDLE_TI]
     entitlements["com.apple.security.application-groups"] = [
         f"group.{BUNDLE_TI}"]
+
+    # we don't want duped apps having associated applinks
+    if "com.apple.developer.associated-domains" in entitlements:
+        del entitlements["com.apple.developer.associated-domains"]
 
     # step 5: write entitlements back to executable
     with open(ENT_PATH, "wb") as f:
